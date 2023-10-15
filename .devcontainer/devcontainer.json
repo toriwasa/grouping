@@ -1,0 +1,12 @@
+{
+    "name": "golang-workspace",
+    "dockerComposeFile": [
+        "docker-compose.dev.yml"
+    ],
+    "service": "golang-dev",
+    "postCreateCommand": [
+        "bash",
+        ".devcontainer/postCreateCommand.sh"
+    ],
+    "workspaceFolder": "/workspace"
+}

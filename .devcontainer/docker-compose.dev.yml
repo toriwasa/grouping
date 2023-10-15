@@ -1,0 +1,15 @@
+version: "3"
+# コンテナプロセスが終了しても作業内容が永続するためのデータボリュームを定義しておく
+volumes:
+  workspace-data:
+services:
+  golang-dev:
+    # Dockerfileからプロジェクトディレクトリ配下の全てのファイルを参照できるようにプロジェクトディレクトリ直下をcontextに指定する
+    build:
+      context: ../
+      dockerfile: .devcontainer/Dockerfile
+    volumes:
+      # 開発に利用するソースコードやビルド結果はホスト側のデータボリュームで管理する
+      - workspace-data:/workspace
+    # 開発環境用にプロセスを起動し続ける
+    tty: true
