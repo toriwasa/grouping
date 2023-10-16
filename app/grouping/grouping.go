@@ -83,7 +83,7 @@ func (iter intIterator) sorted() intIterator {
 }
 
 // IntIterator の中身を全て区切り文字で連結した文字列を返却するメソッド
-func (iter intIterator) join(delimiter string) (string, error) {
+func (iter intIterator) join(delimiter string) string {
 
 	// iter から要素を取り出して区切り文字で連結した文字列を返却する
 	s := ""
@@ -97,7 +97,7 @@ func (iter intIterator) join(delimiter string) (string, error) {
 	// 末尾の区切り文字を削除する
 	s = s[:len(s)-len(delimiter)]
 
-	return s, nil
+	return s
 }
 
 // n個の連番をランダムに並び替えた配列をg個のグループに分けて、各グループの要素を区切り文字で分割された文字列にしたイテレータを返却する
@@ -136,10 +136,7 @@ func GenerateGroupedRandomSeqIterator(n int, g int, delimiter string) (func() (s
 			groupSize++
 		}
 		// 1グループ分の文字列要素を取得して返却する
-		s, err := iter.take(groupSize).sorted().join(delimiter)
-		if err != nil {
-			return "", err
-		}
+		s := iter.take(groupSize).sorted().join(delimiter)
 		return s, nil
 	}, nil
 }
