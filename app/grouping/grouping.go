@@ -7,11 +7,11 @@ import (
 	"sort"
 )
 
-// int型の値を返却するイテレータ
-type IntIterator func() (int, error)
+// int型の値を返却するイテレータ型
+type intIterator func() (int, error)
 
 // 0から始まるn個の連番をランダムに返すイテレータを返却する
-func generateRandomIntIterator(n int) IntIterator {
+func generateRandomIntIterator(n int) intIterator {
 	// n個の要素を持つスライスを生成する
 	seq := make([]int, n)
 	log.Printf("seq: %v\n", seq)
@@ -41,7 +41,7 @@ func generateRandomIntIterator(n int) IntIterator {
 }
 
 // IntIterator から n 個の要素を返すイテレータを返却するメソッド
-func (iter IntIterator) take(n int) IntIterator {
+func (iter intIterator) take(n int) intIterator {
 	// インデックスを管理する変数を定義する
 	index := 0
 	// イテレータから n 個の要素を返すイテレータを返却する
@@ -55,7 +55,7 @@ func (iter IntIterator) take(n int) IntIterator {
 }
 
 // IntIterator の中身を全て昇順ソートしたイテレータを返却するメソッド
-func (iter IntIterator) sorted() IntIterator {
+func (iter intIterator) sorted() intIterator {
 	// 要素数0のint型スライスを生成する
 	seq := make([]int, 0)
 	// イテレータから要素を取り出してスライスに追加していく
@@ -83,7 +83,7 @@ func (iter IntIterator) sorted() IntIterator {
 }
 
 // IntIterator の中身を全て区切り文字で連結した文字列を返却するメソッド
-func (iter IntIterator) join(delimiter string) (string, error) {
+func (iter intIterator) join(delimiter string) (string, error) {
 
 	// iter から要素を取り出して区切り文字で連結した文字列を返却する
 	s := ""
