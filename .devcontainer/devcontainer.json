@@ -8,5 +8,17 @@
         "bash",
         ".devcontainer/postCreateCommand.sh"
     ],
-    "workspaceFolder": "/workspace"
+    "workspaceFolder": "/workspace",
+    "customizations": {
+        "vscode": {
+          "extensions": [
+                "golang.go",
+                "GitHub.copilot",
+                "mhutchie.git-graph",
+                "eamodio.gitlens",
+                "seatonjiang.gitmoji-vscode",
+                "GitHub.vscode-github-actions"
+            ]
+        }
+    }
 }
