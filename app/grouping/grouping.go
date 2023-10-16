@@ -7,13 +7,16 @@ import (
 	"sort"
 )
 
+// int型の値を返却するイテレータ
+type IntIterator func() (int, error)
+
 // 0から始まるn個の連番をランダムに返すイテレータを返却する
-func generateRandomIntIterator(n int) func() (int, error) {
+func generateRandomIntIterator(n int) IntIterator {
 	// n個の要素を持つスライスを生成する
 	seq := make([]int, n)
 	log.Printf("seq: %v\n", seq)
 
-	// 0, 1, 2, .. n の連番を要素として持つようにスライスを初期化する
+	// 0, 1, 2, .. n-1 のn個の連番を要素として持つようにスライスを初期化する
 	for i := range seq {
 		seq[i] = i
 	}
@@ -37,31 +40,61 @@ func generateRandomIntIterator(n int) func() (int, error) {
 	}
 }
 
-// イテレータからn個の値を取り出して昇順ソートしてから指定された区切り文字で分割された文字列にして返却する
-func takeNSortedSeparated(iter func() (int, error), n int, delimiter string) (string, error) {
-	// イテレータからn個の値を取り出してseqスライスに格納する
-	seq := make([]int, n)
-	log.Printf("seq: %v\n", seq)
+// IntIterator から n 個の要素を返すイテレータを返却するメソッド
+func (iter IntIterator) take(n int) IntIterator {
+	// インデックスを管理する変数を定義する
+	index := 0
+	// イテレータから n 個の要素を返すイテレータを返却する
+	return func() (int, error) {
+		index++
+		if index > n {
+			return 0, fmt.Errorf("index out of range")
+		}
+		return iter()
+	}
+}
 
-	for i := 0; i < n; i++ {
+// IntIterator の中身を全て昇順ソートしたイテレータを返却するメソッド
+func (iter IntIterator) sorted() IntIterator {
+	// 要素数0のスライスを生成する
+	seq := make([]int, 0)
+	// イテレータから要素を取り出してスライスに格納する
+	for {
 		v, err := iter()
 		if err != nil {
-			return "", err
+			break
 		}
-		seq[i] = v
+		seq = append(seq, v)
 	}
-	log.Printf("seq: %v\n", seq)
 
-	// seqスライスを昇順ソートする
+	// スライスを昇順ソートする
 	sort.Slice(seq, func(i, j int) bool {
 		return seq[i] < seq[j]
 	})
-	log.Printf("seq: %v\n", seq)
 
-	// seqスライスの要素を区切り文字で連結した文字列を返却する
+	// インデックスを管理する変数を定義する
+	index := -1
+	// スライスの要素を1つずつ返すイテレータを返却する
+	return func() (int, error) {
+		index++
+		if index >= len(seq) {
+			return 0, fmt.Errorf("index out of range")
+		}
+		return seq[index], nil
+	}
+}
+
+// IntIterator の中身を全て区切り文字で連結した文字列を返却するメソッド
+func (iter IntIterator) join(delimiter string) (string, error) {
+
+	// iter から要素を取り出して区切り文字で連結した文字列を返却する
 	s := ""
-	for i := 0; i < n; i++ {
-		s += fmt.Sprintf("%d%s", seq[i], delimiter)
+	for {
+		v, err := iter()
+		if err != nil {
+			break
+		}
+		s += fmt.Sprintf("%d%s", v, delimiter)
 	}
 	// 末尾の区切り文字を削除する
 	s = s[:len(s)-len(delimiter)]
@@ -105,7 +138,7 @@ func GenerateGroupedRandomSeqIterator(n int, g int, delimiter string) (func() (s
 			groupSize++
 		}
 		// 1グループ分の文字列要素を取得して返却する
-		s, err := takeNSortedSeparated(iter, groupSize, delimiter)
+		s, err := iter.take(groupSize).sorted().join(delimiter)
 		if err != nil {
 			return "", err
 		}
