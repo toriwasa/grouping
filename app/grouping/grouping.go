@@ -56,9 +56,9 @@ func (iter IntIterator) take(n int) IntIterator {
 
 // IntIterator の中身を全て昇順ソートしたイテレータを返却するメソッド
 func (iter IntIterator) sorted() IntIterator {
-	// 要素数0のスライスを生成する
+	// 要素数0のint型スライスを生成する
 	seq := make([]int, 0)
-	// イテレータから要素を取り出してスライスに格納する
+	// イテレータから要素を取り出してスライスに追加していく
 	for {
 		v, err := iter()
 		if err != nil {
@@ -68,9 +68,7 @@ func (iter IntIterator) sorted() IntIterator {
 	}
 
 	// スライスを昇順ソートする
-	sort.Slice(seq, func(i, j int) bool {
-		return seq[i] < seq[j]
-	})
+	sort.Ints(seq)
 
 	// インデックスを管理する変数を定義する
 	index := -1
