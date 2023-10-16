@@ -51,12 +51,15 @@ func main() {
 	// コマンドライン引数を出力する
 	log.Printf("n: %d, g: %d, d: \"%s\", v: %t\n", n, g, d, isVerbose)
 
-	// 引数に応じた文字列のイテレータを生成する
-	iter, err := grouping.GenerateGroupedRandomSeqIterator(n, g, d)
-	// エラーが発生した場合は終了する
+	// コマンドライン引数を元にパラメータを生成する
+	p, err := grouping.NewParameter(n, g, d)
+	// パラメータ生成時にエラーが発生した場合は終了する
 	if err != nil {
 		panic(err)
 	}
+
+	// 引数に応じた文字列のイテレータを生成する
+	iter := grouping.GenerateGroupedRandomSeqIterator(p)
 	// イテレータから値を取り出して出力する
 	for {
 		s, err := iter()

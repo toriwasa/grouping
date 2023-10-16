@@ -100,32 +100,49 @@ func (iter intIterator) join(delimiter string) string {
 	return s
 }
 
-// n個の連番をランダムに並び替えた配列をg個のグループに分けて、各グループの要素を区切り文字で分割された文字列にしたイテレータを返却する
-func GenerateGroupedRandomSeqIterator(n int, g int, delimiter string) (func() (string, error), error) {
+// このパッケージのメイン処理の実行に必要なパラメータを表す構造体
+type Parameter struct {
+	MaxNumber  int
+	GroupCount int
+	Delimiter  string
+}
+
+// Parameter構造体のコンストラクタ
+func NewParameter(n int, g int, delimiter string) (Parameter, error) {
 	// n は自然数であることを前提とする
 	if n <= 0 {
-		return nil, fmt.Errorf("n must be positive, but %d", n)
+		return Parameter{}, fmt.Errorf("n must be positive, but %d", n)
 	}
 	// g は自然数であることを前提とする
 	if g <= 0 {
-		return nil, fmt.Errorf("g must be positive, but %d", g)
+		return Parameter{}, fmt.Errorf("g must be positive, but %d", g)
 	}
 
+	return Parameter{
+		MaxNumber:  n,
+		GroupCount: g,
+		Delimiter:  delimiter,
+	}, nil
+}
+
+// n個の連番をランダムに並び替えた配列をg個のグループに分けて、各グループの要素を区切り文字で分割された文字列にしたイテレータを返却する
+func GenerateGroupedRandomSeqIterator(p Parameter) func() (string, error) {
+
 	// 最小グループサイズを計算する
-	minGroupSize := n / g
+	minGroupSize := p.MaxNumber / p.GroupCount
 	// 最大要素数のグループ数を計算する
-	maxElementsGroupCount := n % g
+	maxElementsGroupCount := p.MaxNumber % p.GroupCount
 	log.Printf("minGroupSize: %d\n", minGroupSize)
 	log.Printf("maxElementsGroupCount: %d\n", maxElementsGroupCount)
 
-	iter := generateRandomIntIterator(n)
+	iter := generateRandomIntIterator(p.MaxNumber)
 
 	outputGroupCount := -1
 	// グループの数だけ区切り文字で連結した文字列を返すイテレータを返却する
 	return func() (string, error) {
 		outputGroupCount++
 		// イテレータのループ上限はグループ数に等しい
-		if outputGroupCount >= g {
+		if outputGroupCount >= p.GroupCount {
 			return "", fmt.Errorf("outputGroupCount out of range")
 		}
 
@@ -136,7 +153,7 @@ func GenerateGroupedRandomSeqIterator(n int, g int, delimiter string) (func() (s
 			groupSize++
 		}
 		// 1グループ分の文字列要素を取得して返却する
-		s := iter.take(groupSize).sorted().join(delimiter)
+		s := iter.take(groupSize).sorted().join(p.Delimiter)
 		return s, nil
-	}, nil
+	}
 }
