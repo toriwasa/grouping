@@ -53,6 +53,8 @@ func main() {
 
 	// コマンドライン引数を元にパラメータを生成する
 	p, err := grouping.NewParameter(n, g, d)
+	log.Printf("p: %+v\n", p)
+
 	// パラメータ生成時にエラーが発生した場合は終了する
 	if err != nil {
 		panic(err)
