@@ -55,9 +55,11 @@ func main() {
 	p, err := grouping.NewParameter(n, g, d)
 	log.Printf("p: %+v\n", p)
 
-	// パラメータ生成時にエラーが発生した場合は終了する
+	// パラメータ生成時にエラーが発生した場合はエラー内容を標準エラー出力してヘルプを表示する
 	if err != nil {
-		panic(err)
+		println("Error: " + err.Error())
+		flag.Usage()
+		return
 	}
 
 	// 引数に応じた文字列のイテレータを生成する
