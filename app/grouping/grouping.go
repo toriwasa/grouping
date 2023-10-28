@@ -124,6 +124,10 @@ func NewParameter(n int, g int, delimiter string) (parameter, error) {
 	if g <= 0 {
 		return parameter{}, fmt.Errorf("g must be positive, but %d", g)
 	}
+	// delimiter は空文字でないことを前提とする
+	if delimiter == "" {
+		return parameter{}, fmt.Errorf("delimiter must not be empty")
+	}
 
 	return parameter{
 		n,
