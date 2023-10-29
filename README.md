@@ -1,4 +1,5 @@
 # README
+[![release](https://github.com/toriwasa/grouping/actions/workflows/release.yml/badge.svg)](https://github.com/toriwasa/grouping/actions/workflows/release.yml)
 
 ## Overview
 - n個の連番をランダムにg個のグループに振り分けるCLIツール
