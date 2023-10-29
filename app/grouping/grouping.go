@@ -109,12 +109,19 @@ type parameter struct {
 	groupCount int
 	// 区切り文字
 	delimiter string
+	// 最小グループサイズ
+	minGroupSize int
+	// 最大要素数のグループ数
+	maxElementsGroupCount int
 }
 
-// パラメータを生成する唯一の公開関数
-// n: 生成する連番の最大値
-// g: 生成するグループの数
-// delimiter: 区切り文字
+// パラメータを生成する唯一の手段
+// パラメータの制約を満たさない場合はエラーを返却する
+//
+// 引数:
+//   - n: 生成する連番の最大値
+//   - g: 生成するグループの数
+//   - delimiter: 区切り文字
 func NewParameter(n int, g int, delimiter string) (parameter, error) {
 	// n は自然数であることを前提とする
 	if n <= 0 {
@@ -124,28 +131,33 @@ func NewParameter(n int, g int, delimiter string) (parameter, error) {
 	if g <= 0 {
 		return parameter{}, fmt.Errorf("g must be positive, but %d", g)
 	}
+	// n は g 以上であることを前提とする
+	if n < g {
+		return parameter{}, fmt.Errorf("n must be greater than or equal to g, but n: %d, g: %d", n, g)
+	}
 	// delimiter は空文字でないことを前提とする
 	if delimiter == "" {
 		return parameter{}, fmt.Errorf("delimiter must not be empty")
 	}
+	// 最小グループサイズを計算する
+	minGroupSize := n / g
+	// 最大要素数のグループ数を計算する
+	maxElementsGroupCount := n % g
 
-	return parameter{
+	// パラメータを生成して返却する
+	p := parameter{
 		n,
 		g,
 		delimiter,
-	}, nil
+		minGroupSize,
+		maxElementsGroupCount,
+	}
+	log.Printf("p: %+v\n", p)
+	return p, nil
 }
 
 // n個の連番をランダムに並び替えた配列をg個のグループに分けて、各グループの要素を区切り文字で分割された文字列にしたイテレータを返却する
 func GenerateGroupedRandomSeqIterator(p parameter) func() (string, error) {
-
-	// 最小グループサイズを計算する
-	minGroupSize := p.maxNumber / p.groupCount
-	// 最大要素数のグループ数を計算する
-	maxElementsGroupCount := p.maxNumber % p.groupCount
-	log.Printf("minGroupSize: %d\n", minGroupSize)
-	log.Printf("maxElementsGroupCount: %d\n", maxElementsGroupCount)
-
 	iter := generateRandomIntIterator(p.maxNumber)
 
 	outputGroupCount := -1
@@ -158,9 +170,9 @@ func GenerateGroupedRandomSeqIterator(p parameter) func() (string, error) {
 		}
 
 		// 1グループあたり要素数のデフォルトは最小グループサイズ
-		groupSize := minGroupSize
+		groupSize := p.minGroupSize
 		// 最大要素数のグループ数に達するまでは、1グループあたり要素数を1つ増やす
-		if outputGroupCount < maxElementsGroupCount {
+		if outputGroupCount < p.maxElementsGroupCount {
 			groupSize++
 		}
 		// 1グループ分の文字列要素を取得して返却する
