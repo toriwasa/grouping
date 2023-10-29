@@ -14,6 +14,8 @@ func Test_パラメータの生成ができる(t *testing.T) {
 		1,
 		1,
 		",",
+		1,
+		0,
 	}
 
 	// Act
@@ -78,6 +80,31 @@ func Test_gが0以下の場合はパラメータ生成時にエラーが発生�
 	}
 }
 
+func Test_nがgより小さい場合はパラメータ生成時にエラーが発生する(t *testing.T) {
+	// Arrange
+	// テストテーブルの定義
+	testCases := []struct {
+		n int
+		g int
+	}{
+		{1, 2},
+		{2, 3},
+		{3, 4},
+	}
+
+	for _, testCase := range testCases {
+		// Act
+		// パラメータの生成
+		_, err := NewParameter(testCase.n, testCase.g, ",")
+
+		// Assert
+		// エラーが発生することを検証する
+		if err == nil {
+			t.Errorf("n が g より小さい場合はエラーが発生するはずなのにエラーが発生しませんでした, n: %d, g: %d", testCase.n, testCase.g)
+		}
+	}
+}
+
 func Test_区切り文字が空文字の場合はパラメータ生成時にエラーが発生する(t *testing.T) {
 	// Arrange
 	// 期待値エラーの定義
@@ -101,7 +128,7 @@ func Test_区切り文字が空文字の場合はパラメータ生成時にエ�
 // 検証したいふるまい: n個の連番をランダムに並び替えた配列をg個のグループに分けて、各グループの要素を区切り文字で分割された文字列にしたイテレータを返却する
 func Test_n個の連番をランダムに並び替えた配列をg個のグループに分けて各グループの要素を区切り文字で分割された文字列にしたイテレータを返却する(t *testing.T) {
 	// Arrange
-	// 文字列を区切り文字で分割してint型スライスに追加するヘルパー関数の定義
+	// 文字列を区切り文字で分割してint型スライスとして返却するヘルパー関数の定義
 	splitToInts := func(s string, d string) []int {
 		var ints []int
 		for _, v := range strings.Split(s, d) {
@@ -124,14 +151,15 @@ func Test_n個の連番をランダムに並び替えた配列をg個のグル�
 	}
 
 	// 期待値の定義
-	expected := []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
+	expectedIntSlice := []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
 
 	// Act
 	// イテレータの生成
 	iter := GenerateGroupedRandomSeqIterator(p)
 
 	// Assert
-	var actualInts []int
+	var actualIntSlice []int
+	var actualIntLengthSlice []int
 	actualLines := 0
 	t.Log("イテレータの内容を区切り文字で分割してint型スライスに追加する")
 	for {
@@ -141,13 +169,17 @@ func Test_n個の連番をランダムに並び替えた配列をg個のグル�
 		}
 		// イテレータの内容があるなら行数をカウントする
 		actualLines++
-		// ... は可変長引数を表す
-		actualInts = append(actualInts, splitToInts(s, d)...)
+		// イテレータの内容をint型スライスに変換する
+		tmpIntSlice := splitToInts(s, d)
+		// int型スライスの要素数を記録しておく
+		actualIntLengthSlice = append(actualIntLengthSlice, len(tmpIntSlice))
+		// int型スライスを既存スライスに連結する
+		actualIntSlice = append(actualIntSlice, tmpIntSlice...)
 	}
 
 	t.Log("スライスの要素数が n と一致することを検証する")
-	if n != len(actualInts) {
-		t.Fatalf("expected: %d, actual: %d", n, len(actualInts))
+	if n != len(actualIntSlice) {
+		t.Fatalf("expected: %d, actual: %d", n, len(actualIntSlice))
 	}
 
 	t.Log("イテレータの行数が g と一致することを検証する")
@@ -155,15 +187,32 @@ func Test_n個の連番をランダムに並び替えた配列をg個のグル�
 		t.Fatalf("expected: %d, actual: %d", g, actualLines)
 	}
 
+	t.Log("各グループ要素数の最大値と最小値の差は0または1であることを検証する")
+	// actualIntLengthSlice の最大値および最小値取得
+	max := 0
+	min := n
+	for _, v := range actualIntLengthSlice {
+		if v > max {
+			max = v
+		}
+		if v < min {
+			min = v
+		}
+	}
+	// 最大値と最小値の差が0または1であることを検証する
+	if max-min != 0 && max-min != 1 {
+		t.Fatalf("expected: %d or %d, actual: %d", 0, 1, max-min)
+	}
+
 	t.Log("返却された文字列に含まれる数値が過不足なく期待値と一致することを検証する")
 	// int型スライスを昇順ソートする
-	sort.Ints(actualInts)
-	if len(expected) != len(actualInts) {
-		t.Fatalf("expected: %v, actual: %v", expected, actualInts)
+	sort.Ints(actualIntSlice)
+	if len(expectedIntSlice) != len(actualIntSlice) {
+		t.Fatalf("expected: %v, actual: %v", expectedIntSlice, actualIntSlice)
 	}
-	for i, v := range expected {
-		if v != actualInts[i] {
-			t.Fatalf("expected: %v, actual: %v", expected, actualInts)
+	for i, v := range expectedIntSlice {
+		if v != actualIntSlice[i] {
+			t.Fatalf("expected: %v, actual: %v", expectedIntSlice, actualIntSlice)
 		}
 	}
 }
