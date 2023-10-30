@@ -256,9 +256,6 @@ func Test_n個の連番をランダムに並び替えた配列をg個のグル�
 		t.Log("返却された文字列に含まれる数値が過不足なく期待値と一致することを検証する")
 		// int型スライスを昇順ソートする
 		sort.Ints(actual.intSlice)
-		if len(expectedIntSlice) != len(actual.intSlice) {
-			t.Fatalf("expected: %v, actual: %v", expectedIntSlice, actual.intSlice)
-		}
 		if !slices.Equal(expectedIntSlice, actual.intSlice) {
 			t.Fatalf("expected: %v, actual: %v", expectedIntSlice, actual.intSlice)
 		}
