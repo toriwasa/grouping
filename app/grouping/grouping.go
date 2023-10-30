@@ -57,8 +57,9 @@ func (iter intIterator) take(n int) intIterator {
 
 // IntIterator の中身を全て昇順ソートしたイテレータを返却するメソッド
 func (iter intIterator) sorted() intIterator {
-	// 要素数0のint型スライスを生成する
-	seq := make([]int, 0)
+	// イテレータから取り出したint型の値を格納するスライス
+	var seq []int
+
 	// イテレータから要素を取り出してスライスに追加していく
 	for {
 		v, err := iter()
