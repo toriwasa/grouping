@@ -152,7 +152,8 @@ func Test_n個の連番をランダムに並び替えた配列をg個のグル�
 		rowCount int
 	}
 	// string型を返すイテレータを元に実際値の構造体を生成するヘルパー関数の定義
-	generateActual := func(iter func() (string, error)) actualResult {
+	generateActual := func(iter func() (string, error), delimiter string) actualResult {
+		// 実際値を表す構造体の初期化
 		var actual actualResult
 		for {
 			s, err := iter()
@@ -160,7 +161,7 @@ func Test_n個の連番をランダムに並び替えた配列をg個のグル�
 				break
 			}
 			// イテレータの内容をint型スライスに変換する
-			tmpIntSlice := splitToInts(s, ",")
+			tmpIntSlice := splitToInts(s, delimiter)
 			// int型スライスの要素数を記録しておく
 			actual.rowIntCountSlice = append(actual.rowIntCountSlice, len(tmpIntSlice))
 			// int型スライスを既存スライスに連結する
@@ -171,56 +172,70 @@ func Test_n個の連番をランダムに並び替えた配列をg個のグル�
 		return actual
 	}
 
-	// 入力パラメータの定義
-	n := 10
-	g := 4
-	d := ","
-	p, err := NewParameter(n, g, d)
-	if err != nil {
-		t.Fatalf("成功するはずのパラメータ生成処理でエラーが発生しました: %s", err)
+	// テストテーブルの定義
+	testCases := []struct {
+		n                int
+		g                int
+		d                string
+		expectedIntSlice []int
+	}{
+		{10, 4, ",", []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}},
+		{3, 3, ":::", []int{0, 1, 2}},
+		{7, 6, "@", []int{0, 1, 2, 3, 4, 5, 6}},
 	}
 
-	// 期待値の定義
-	expectedIntSlice := []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
+	for _, testCase := range testCases {
+		// Arrange
+		n := testCase.n
+		g := testCase.g
+		d := testCase.d
+		expectedIntSlice := testCase.expectedIntSlice
 
-	// Act
-	// イテレータの生成
-	iter := GenerateGroupedRandomSeqIterator(p)
+		// 入力パラメータの定義
+		p, err := NewParameter(n, g, d)
+		if err != nil {
+			t.Fatalf("成功するはずのパラメータ生成処理でエラーが発生しました: %s", err)
+		}
 
-	// Assert
-	// イテレータから実際値を取り出す
-	actual := generateActual(iter)
-	t.Logf("actual: %+v", actual)
+		// Act
+		// イテレータの生成
+		iter := GenerateGroupedRandomSeqIterator(p)
 
-	t.Log("スライスの要素数が n と一致することを検証する")
-	if n != len(actual.intSlice) {
-		t.Fatalf("expected: %d, actual: %d", n, len(actual.intSlice))
-	}
+		// Assert
+		// イテレータから実際値を取り出す
+		actual := generateActual(iter, d)
+		t.Logf("actual: %+v", actual)
 
-	t.Log("イテレータの行数が g と一致することを検証する")
-	if g != actual.rowCount {
-		t.Fatalf("expected: %d, actual: %d", g, actual.rowCount)
-	}
+		t.Log("スライスの要素数が n と一致することを検証する")
+		if n != len(actual.intSlice) {
+			t.Fatalf("expected: %d, actual: %d", n, len(actual.intSlice))
+		}
 
-	t.Log("各グループ要素数の最大値と最小値の差は0または1であることを検証する")
-	// actualIntLengthSlice の最大値および最小値取得
-	max := slices.Max(actual.rowIntCountSlice)
-	min := slices.Min(actual.rowIntCountSlice)
-	t.Logf("max: %d, min: %d", max, min)
-	// 最大値と最小値の差が0または1であることを検証する
-	if max-min != 0 && max-min != 1 {
-		t.Fatalf("expected: %d or %d, actual: %d", 0, 1, max-min)
-	}
+		t.Log("イテレータの行数が g と一致することを検証する")
+		if g != actual.rowCount {
+			t.Fatalf("expected: %d, actual: %d", g, actual.rowCount)
+		}
 
-	t.Log("返却された文字列に含まれる数値が過不足なく期待値と一致することを検証する")
-	// int型スライスを昇順ソートする
-	sort.Ints(actual.intSlice)
-	if len(expectedIntSlice) != len(actual.intSlice) {
-		t.Fatalf("expected: %v, actual: %v", expectedIntSlice, actual.intSlice)
-	}
-	for i, v := range expectedIntSlice {
-		if v != actual.intSlice[i] {
+		t.Log("各グループ要素数の最大値と最小値の差は0または1であることを検証する")
+		// actualIntLengthSlice の最大値および最小値取得
+		max := slices.Max(actual.rowIntCountSlice)
+		min := slices.Min(actual.rowIntCountSlice)
+		t.Logf("max: %d, min: %d", max, min)
+		// 最大値と最小値の差が0または1であることを検証する
+		if max-min != 0 && max-min != 1 {
+			t.Fatalf("expected: %d or %d, actual: %d", 0, 1, max-min)
+		}
+
+		t.Log("返却された文字列に含まれる数値が過不足なく期待値と一致することを検証する")
+		// int型スライスを昇順ソートする
+		sort.Ints(actual.intSlice)
+		if len(expectedIntSlice) != len(actual.intSlice) {
 			t.Fatalf("expected: %v, actual: %v", expectedIntSlice, actual.intSlice)
+		}
+		for i, v := range expectedIntSlice {
+			if v != actual.intSlice[i] {
+				t.Fatalf("expected: %v, actual: %v", expectedIntSlice, actual.intSlice)
+			}
 		}
 	}
 }
