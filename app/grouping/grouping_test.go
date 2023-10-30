@@ -259,10 +259,8 @@ func Test_n個の連番をランダムに並び替えた配列をg個のグル�
 		if len(expectedIntSlice) != len(actual.intSlice) {
 			t.Fatalf("expected: %v, actual: %v", expectedIntSlice, actual.intSlice)
 		}
-		for i, v := range expectedIntSlice {
-			if v != actual.intSlice[i] {
-				t.Fatalf("expected: %v, actual: %v", expectedIntSlice, actual.intSlice)
-			}
+		if !slices.Equal(expectedIntSlice, actual.intSlice) {
+			t.Fatalf("expected: %v, actual: %v", expectedIntSlice, actual.intSlice)
 		}
 	}
 }
