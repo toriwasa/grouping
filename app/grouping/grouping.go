@@ -5,6 +5,7 @@ import (
 	"log"
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 // int型の値を返却するイテレータ型
@@ -139,6 +140,11 @@ func NewParameter(n int, g int, delimiter string) (parameter, error) {
 	if delimiter == "" {
 		return parameter{}, fmt.Errorf("delimiter must not be empty")
 	}
+	// delimiter は先頭ゼロ埋めを含め数値文字列でないことを前提とする
+	if _, err := strconv.Atoi(delimiter); err == nil {
+		return parameter{}, fmt.Errorf("delimiter must not be numeric string")
+	}
+
 	// 最小グループサイズを計算する
 	minGroupSize := n / g
 	// 最大要素数のグループ数を計算する
