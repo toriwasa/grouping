@@ -1,6 +1,7 @@
 package grouping
 
 import (
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -189,16 +190,9 @@ func Test_n個の連番をランダムに並び替えた配列をg個のグル�
 
 	t.Log("各グループ要素数の最大値と最小値の差は0または1であることを検証する")
 	// actualIntLengthSlice の最大値および最小値取得
-	max := 0
-	min := n
-	for _, v := range actualIntLengthSlice {
-		if v > max {
-			max = v
-		}
-		if v < min {
-			min = v
-		}
-	}
+	max := slices.Max(actualIntLengthSlice)
+	min := slices.Min(actualIntLengthSlice)
+	t.Logf("max: %d, min: %d", max, min)
 	// 最大値と最小値の差が0または1であることを検証する
 	if max-min != 0 && max-min != 1 {
 		t.Fatalf("expected: %d or %d, actual: %d", 0, 1, max-min)
