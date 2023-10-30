@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
-	"sort"
+	"slices"
 	"strconv"
 )
 
@@ -69,7 +69,7 @@ func (iter intIterator) sorted() intIterator {
 	}
 
 	// スライスを昇順ソートする
-	sort.Ints(seq)
+	slices.Sort(seq)
 
 	// インデックスを管理する変数を定義する
 	index := -1
